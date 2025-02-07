@@ -1,5 +1,7 @@
 package com.fetch.receiptprocessor.domain;
 
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -38,6 +40,7 @@ public class Receipt {
 
     @NotBlank(message = "Total is required")
     @Pattern(regexp = "^\\d+\\.\\d{2}$", message = "Total must be in decimal format with two decimal places (e.g., 35.35)")
+    @JsonDeserialize(using = StringEnforcingDeserializer.class)
     private String total;
 
     @NotEmpty(message = "Items list is required")

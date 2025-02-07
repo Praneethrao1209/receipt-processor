@@ -2,6 +2,7 @@ package com.fetch.receiptprocessor.controller;
 
 
 import com.fetch.receiptprocessor.domain.Receipt;
+import com.fetch.receiptprocessor.exception.ReceiptNotFoundException;
 import com.fetch.receiptprocessor.service.ReceiptService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,23 +29,15 @@ public class ReceiptController {
 
     @GetMapping("/{id}/points")
     public ResponseEntity<?> getReceiptPoints(@PathVariable String id) {
-        try {
-            UUID uuid = UUID.fromString(id);
-            Optional<Receipt> receipt = receiptService.findReceiptById(uuid);
+        UUID uuid = UUID.fromString(id);
+        Optional<Receipt> receipt = receiptService.findReceiptById(uuid);
 
-            if (receipt.isEmpty()) {
-                return new ResponseEntity<>("No receipt found for that ID.", HttpStatus.NOT_FOUND);
-            }
-
-            int points = receiptService.calculatePointsForReceipt(uuid);
-            return ResponseEntity.ok().body(Map.of("points", points));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>("Invalid UUID format.", HttpStatus.BAD_REQUEST);
+        if (receipt.isEmpty()) {
+            throw new ReceiptNotFoundException("No receipt found for that ID.");
         }
+
+        int points = receiptService.calculatePointsForReceipt(uuid);
+        return ResponseEntity.ok().body(Map.of("points", points));
     }
 
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleValidationException() {
-        return ResponseEntity.badRequest().body("The receipt is invalid. Please verify input.");
-    }
 }
